@@ -1,0 +1,13 @@
+{
+  "estudiantes": [
+    { "id": 1, "nombre": "Ana Pérez", "correo": "ana@example.com", "edad": 21, "carrera": "Ingeniería", "estado": "activo" },
+    { "id": 2, "nombre": "Luis Gómez", "correo": "luis@example.com", "edad": 22, "carrera": "Matemáticas", "estado": "activo" }
+  ],
+  "cursos": [
+    { "id": 1, "nombre": "Programación I", "sigla": "PROG1", "docente": "Dr. Ruiz", "cupoMaximo": 2, "estado": "disponible" },
+    { "id": 2, "nombre": "Álgebra", "sigla": "ALG", "docente": "M. López", "cupoMaximo": 30, "estado": "disponible" }
+  ],
+  "inscripciones": [
+    { "id": 1, "estudianteId": 1, "cursoId": 1, "fecha": "2026-04-17T00:00:00.000Z", "estado": "activa" }
+  ]
+}

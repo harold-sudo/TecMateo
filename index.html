@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Sistema Académico</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Sistema Académico</div>
+    <nav class="tabs">
+      <button id="tab-dashboard" class="tab active">Dashboard</button>
+      <button id="tab-est" class="tab">Estudiantes</button>
+      <button id="tab-cur" class="tab">Cursos</button>
+      <button id="tab-insc" class="tab">Inscripciones</button>
+    </nav>
+  </header>
+
+    <div class="screens-links container-card">
+      <strong>Pantallas separadas:</strong>
+      <a href="screens/dashboard.html">Dashboard</a> ·
+      <a href="screens/estudiantes.html">Estudiantes</a> ·
+      <a href="screens/cursos.html">Cursos</a> ·
+      <a href="screens/inscripciones.html">Inscripciones</a>
+    </div>
+
+<main id="app" class="main"></main>
+
+<!-- modal placeholder for confirmations -->
+<div id="modal" class="modal hidden" role="dialog" aria-hidden="true">
+  <div class="modal-content">
+    <p id="modal-text"></p>
+    <div class="modal-actions">
+      <button id="modal-cancel">Cancelar</button>
+      <button id="modal-confirm">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<script type="module" src="dist/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Estudiantes - Sistema Académico</title>
+  <link rel="stylesheet" href="../style.css">
+  <style>.container-card{max-width:900px;margin:0 auto}</style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Sistema Académico — Estudiantes</div>
+    <nav class="tabs">
+      <a href="../index.html">Volver</a>
+    </nav>
+  </header>
+
+  <main id="app" class="main" data-static="true" data-tab="est">
+    <div class="container-card">
+      <h1>Estudiantes</h1>
+      <div id="msg" role="status" class="msg"></div>
+    </div>
+
+    <div data-tab="est" class="container-card">
+      <h2>Estudiante</h2>
+      <form id="est-form">
+        <input name="nombre" placeholder="Nombre completo" required />
+        <input name="correo" placeholder="Correo" required />
+        <input name="edad" placeholder="Edad" type="number" required />
+        <input name="carrera" placeholder="Carrera" required />
+        <button type="submit">Guardar estudiante</button>
+        <button type="button" id="est-cancel" style="display:none">Cancelar</button>
+      </form>
+      <div id="est-list"></div>
+    </div>
+  </main>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-content">
+      <p id="modal-text"></p>
+      <div class="modal-actions">
+        <button id="modal-cancel">Cancelar</button>
+        <button id="modal-confirm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../dist/app.js"></script>
+  <script>
+    window.addEventListener('load', ()=>{
+      window.dispatchEvent(new CustomEvent('app:showTab',{detail:'est'}));
+    });
+  </script>
+</body>
+</html>

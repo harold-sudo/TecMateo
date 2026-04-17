@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Inscripciones - Sistema Académico</title>
+  <link rel="stylesheet" href="../style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Sistema Académico — Inscripciones</div>
+    <nav class="tabs">
+      <a href="../index.html">Volver</a>
+    </nav>
+  </header>
+
+  <main id="app" class="main" data-static="true" data-tab="insc">
+    <div class="container-card">
+      <h1>Inscripciones</h1>
+      <div id="msg" role="status" class="msg"></div>
+    </div>
+
+    <div data-tab="insc" class="container-card">
+      <h2>Inscribir</h2>
+      <form id="insc-form">
+        <select id="insc-est"></select>
+        <select id="insc-curso"></select>
+        <button type="submit">Inscribir</button>
+      </form>
+      <div id="insc-list"></div>
+    </div>
+  </main>
+
+  <div id="modal" class="modal hidden" role="dialog" aria-hidden="true">
+    <div class="modal-content">
+      <p id="modal-text"></p>
+      <div class="modal-actions">
+        <button id="modal-cancel">Cancelar</button>
+        <button id="modal-confirm">Confirmar</button>
+      </div>
+    </div>
+  </div>
+
+  <script type="module" src="../dist/app.js"></script>
+  <script>
+    window.addEventListener('load', ()=>{
+      window.dispatchEvent(new CustomEvent('app:showTab',{detail:'insc'}));
+    });
+  </script>
+</body>
+</html>
