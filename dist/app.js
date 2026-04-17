@@ -1,14 +1,16 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-const estudiante_service_1 = require("./services/estudiante.service");
-const curso_service_1 = require("./services/curso.service");
-const inscripcion_service_1 = require("./services/inscripcion.service");
-const validators_1 = require("./utils/validators");
-const estudianteSvc = new estudiante_service_1.EstudianteService();
-const cursoSvc = new curso_service_1.CursoService();
-const inscSvc = new inscripcion_service_1.InscripcionService();
+import { EstudianteService } from "./services/estudiante.service.js";
+import { CursoService } from "./services/curso.service.js";
+import { InscripcionService } from "./services/inscripcion.service.js";
+import { required, isEmail, isPositiveInteger } from "./utils/validators.js";
+const estudianteSvc = new EstudianteService();
+const cursoSvc = new CursoService();
+const inscSvc = new InscripcionService();
 let editingEstId = null;
 let editingCurId = null;
+let modalAction = null;
+let estSort = { key: 'nombre', dir: 1 };
+let curSort = { key: 'nombre', dir: 1 };
+let insSort = { key: 'fecha', dir: -1 };
 function q(sel, parent = document) {
     return parent.querySelector(sel);
 }
@@ -21,6 +23,177 @@ function showMessage(msg, isError = false) {
     }
     else
         alert(msg);
+}
+function closeModal() {
+    const modal = q('#modal');
+    const extra = q('#modal-extra');
+    const text = q('#modal-text');
+    if (extra)
+        extra.remove();
+    if (text)
+        text.style.display = '';
+    if (modal) {
+        modal.classList.add('hidden');
+        modal.setAttribute('aria-hidden', 'true');
+    }
+    modalAction = null;
+}
+function showConfirmModal(message, onConfirm, confirmLabel = 'Confirmar') {
+    const modal = q('#modal');
+    const text = q('#modal-text');
+    const confirmBtn = q('#modal-confirm');
+    if (!modal || !text || !confirmBtn) {
+        if (confirm(message))
+            onConfirm();
+        return;
+    }
+    const extra = q('#modal-extra');
+    if (extra)
+        extra.remove();
+    text.style.display = '';
+    text.textContent = message;
+    confirmBtn.textContent = confirmLabel;
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    modalAction = onConfirm;
+}
+function showEditEstudianteModal(id) {
+    const est = estudianteSvc.findById(id);
+    if (!est)
+        return;
+    const modal = q('#modal');
+    const text = q('#modal-text');
+    const confirmBtn = q('#modal-confirm');
+    const content = q('.modal-content');
+    if (!modal || !text || !confirmBtn || !content)
+        return;
+    text.style.display = '';
+    text.textContent = 'Editar estudiante';
+    const old = q('#modal-extra');
+    if (old)
+        old.remove();
+    const extra = document.createElement('div');
+    extra.id = 'modal-extra';
+    extra.className = 'modal-form';
+    extra.innerHTML = `
+    <input id="m-est-nombre" value="${est.nombre}" placeholder="Nombre completo" />
+    <input id="m-est-correo" value="${est.correo}" placeholder="Correo" />
+    <input id="m-est-edad" value="${est.edad}" type="number" placeholder="Edad" />
+    <input id="m-est-carrera" value="${est.carrera}" placeholder="Carrera" />
+  `;
+    content.insertBefore(extra, q('.modal-actions'));
+    confirmBtn.textContent = 'Guardar';
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    modalAction = () => {
+        var _a, _b, _c, _d;
+        const nombre = (((_a = q('#m-est-nombre')) === null || _a === void 0 ? void 0 : _a.value) || '').trim();
+        const correo = (((_b = q('#m-est-correo')) === null || _b === void 0 ? void 0 : _b.value) || '').trim();
+        const edad = Number(((_c = q('#m-est-edad')) === null || _c === void 0 ? void 0 : _c.value) || 0);
+        const carrera = (((_d = q('#m-est-carrera')) === null || _d === void 0 ? void 0 : _d.value) || '').trim();
+        if (!required(nombre) || !required(correo) || !required(String(edad)) || !required(carrera))
+            throw new Error('Todos los campos son requeridos');
+        if (!isEmail(correo))
+            throw new Error('Email inválido');
+        if (!isPositiveInteger(edad))
+            throw new Error('Edad inválida');
+        estudianteSvc.update(id, { nombre, correo, edad, carrera });
+        refreshAll();
+        showMessage('Estudiante actualizado');
+    };
+}
+function showEditCursoModal(id) {
+    const cur = cursoSvc.findById(id);
+    if (!cur)
+        return;
+    const modal = q('#modal');
+    const text = q('#modal-text');
+    const confirmBtn = q('#modal-confirm');
+    const content = q('.modal-content');
+    if (!modal || !text || !confirmBtn || !content)
+        return;
+    text.style.display = '';
+    text.textContent = 'Editar curso';
+    const old = q('#modal-extra');
+    if (old)
+        old.remove();
+    const extra = document.createElement('div');
+    extra.id = 'modal-extra';
+    extra.className = 'modal-form';
+    extra.innerHTML = `
+    <input id="m-cur-nombre" value="${cur.nombre}" placeholder="Nombre del curso" />
+    <input id="m-cur-sigla" value="${cur.sigla}" placeholder="Sigla" />
+    <input id="m-cur-docente" value="${cur.docente}" placeholder="Docente" />
+    <input id="m-cur-cupo" value="${cur.cupoMaximo}" type="number" placeholder="Cupo máximo" />
+  `;
+    content.insertBefore(extra, q('.modal-actions'));
+    confirmBtn.textContent = 'Guardar';
+    modal.classList.remove('hidden');
+    modal.setAttribute('aria-hidden', 'false');
+    modalAction = () => {
+        var _a, _b, _c, _d;
+        const nombre = (((_a = q('#m-cur-nombre')) === null || _a === void 0 ? void 0 : _a.value) || '').trim();
+        const sigla = (((_b = q('#m-cur-sigla')) === null || _b === void 0 ? void 0 : _b.value) || '').trim();
+        const docente = (((_c = q('#m-cur-docente')) === null || _c === void 0 ? void 0 : _c.value) || '').trim();
+        const cupoMaximo = Number(((_d = q('#m-cur-cupo')) === null || _d === void 0 ? void 0 : _d.value) || 0);
+        if (!required(nombre) || !required(sigla) || !required(docente) || !required(String(cupoMaximo)))
+            throw new Error('Todos los campos son requeridos');
+        if (!isPositiveInteger(cupoMaximo))
+            throw new Error('Cupo máximo inválido');
+        cursoSvc.update(id, { nombre, sigla, docente, cupoMaximo });
+        refreshAll();
+        showMessage('Curso actualizado');
+    };
+}
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+    const enabled = document.body.classList.contains('dark');
+    localStorage.setItem('ui:dark', enabled ? '1' : '0');
+}
+function applySavedTheme() {
+    const enabled = localStorage.getItem('ui:dark') === '1';
+    document.body.classList.toggle('dark', enabled);
+}
+function exportData() {
+    const data = {
+        estudiantes: estudianteSvc.getAll(),
+        cursos: cursoSvc.getAll(),
+        inscripciones: inscSvc.getAll()
+    };
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `respaldo-sistema-${new Date().toISOString().slice(0, 10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(link.href);
+}
+function importData(file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+        try {
+            const raw = String(reader.result || '{}');
+            const json = JSON.parse(raw);
+            if (!Array.isArray(json.estudiantes) || !Array.isArray(json.cursos) || !Array.isArray(json.inscripciones)) {
+                throw new Error('El JSON no tiene el formato esperado');
+            }
+            estudianteSvc.setAll(json.estudiantes);
+            cursoSvc.setAll(json.cursos);
+            inscSvc.setAll(json.inscripciones);
+            refreshAll();
+            showMessage('Datos importados correctamente');
+        }
+        catch (err) {
+            showMessage(err.message || 'Error al importar JSON', true);
+        }
+    };
+    reader.readAsText(file);
+}
+function compareValues(a, b, dir) {
+    if (typeof a === 'number' && typeof b === 'number')
+        return (a - b) * dir;
+    return String(a).localeCompare(String(b), 'es', { sensitivity: 'base' }) * dir;
 }
 async function buildUI() {
     const app = document.getElementById('app') || document.body;
@@ -36,28 +209,16 @@ async function buildUI() {
     }
     const container = document.createElement('div');
     container.className = 'container-card';
-    container.innerHTML = `<h1>Sistema Académico</h1><div id="msg" role="status" class="msg"></div>`;
+    container.innerHTML = `
+    <h1>Sistema Académico</h1>
+    <div id="msg" role="status" class="msg"></div>
+  `;
     // Dashboard section
     const dash = document.createElement('div');
     dash.setAttribute('data-tab', 'dashboard');
     dash.className = 'container-card';
     dash.innerHTML = `
     <div class="cards" id="dashboard-cards"></div>
-    <h3>Crear rápido</h3>
-    <div class="dashboard-quick">
-      <form id="dash-est-form" class="quick-form">
-        <h4>Nuevo Estudiante</h4>
-        <input name="nombre" placeholder="Nombre" required />
-        <input name="correo" placeholder="Correo" required />
-        <button type="submit">Crear estudiante</button>
-      </form>
-      <form id="dash-cur-form" class="quick-form">
-        <h4>Nuevo Curso</h4>
-        <input name="nombre" placeholder="Nombre curso" required />
-        <input name="sigla" placeholder="Sigla" required />
-        <button type="submit">Crear curso</button>
-      </form>
-    </div>
     <h3>Resumen</h3>
     <div id="dashboard-summary"></div>
   `;
@@ -119,8 +280,6 @@ async function buildUI() {
       <label>Ver estudiantes de curso: <select id="rel-cur"><option value="">--seleccione--</option></select></label>
       <ul id="rel-cur-list"></ul>
     </div>
-    <h2>Estadísticas</h2>
-    <ul id="stats"></ul>
   `;
     const grid = document.createElement('div');
     grid.className = 'main';
@@ -145,6 +304,7 @@ async function buildUI() {
     grid.appendChild(rightCol);
     app.appendChild(container);
     app.appendChild(grid);
+    applySavedTheme();
     bindEvents();
     await seedDataIfNeeded();
     showTab('dashboard');
@@ -203,152 +363,150 @@ function bindHeaderTabs() {
 // run header binding now (header is static in index.html)
 bindHeaderTabs();
 function bindEvents() {
+    var _a, _b, _c, _d, _e, _f;
     const ef = q('#est-form');
     const cf = q('#cur-form');
     const insf = q('#insc-form');
-    ef.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const fd = new FormData(ef);
-        const nombre = (fd.get('nombre') || '').trim();
-        const correo = (fd.get('correo') || '').trim();
-        const edad = Number(fd.get('edad'));
-        const carrera = (fd.get('carrera') || '').trim();
-        try {
-            if (!(0, validators_1.required)(nombre) || !(0, validators_1.required)(correo) || !(0, validators_1.required)(String(edad)) || !(0, validators_1.required)(carrera))
-                throw new Error('Todos los campos son requeridos');
-            if (!(0, validators_1.isEmail)(correo))
-                throw new Error('Email inválido');
-            if (!(0, validators_1.isPositiveInteger)(edad))
-                throw new Error('Edad inválida');
-            if (editingEstId) {
-                estudianteSvc.update(editingEstId, { nombre, correo, edad, carrera });
-                editingEstId = null;
-                q('#est-cancel').style.display = 'none';
-                showMessage('Estudiante actualizado');
+    const modalCancel = q('#modal-cancel');
+    const modalConfirm = q('#modal-confirm');
+    if (modalCancel)
+        modalCancel.addEventListener('click', closeModal);
+    if (modalConfirm) {
+        modalConfirm.addEventListener('click', () => {
+            if (!modalAction)
+                return;
+            try {
+                modalAction();
+                closeModal();
             }
-            else {
-                estudianteSvc.create({ nombre, correo, edad, carrera, estado: 'activo' });
-                showMessage('Estudiante creado');
+            catch (err) {
+                showMessage(err.message || String(err), true);
             }
-            ef.reset();
-            refreshAll();
-        }
-        catch (err) {
-            showMessage(err.message || String(err), true);
-        }
-    });
-    cf.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const fd = new FormData(cf);
-        const nombre = (fd.get('nombre') || '').trim();
-        const sigla = (fd.get('sigla') || '').trim();
-        const docente = (fd.get('docente') || '').trim();
-        const cupoMaximo = Number(fd.get('cupoMaximo'));
-        try {
-            if (!(0, validators_1.required)(nombre) || !(0, validators_1.required)(sigla) || !(0, validators_1.required)(docente) || !(0, validators_1.required)(String(cupoMaximo)))
-                throw new Error('Todos los campos son requeridos');
-            if (!(0, validators_1.isPositiveInteger)(cupoMaximo))
-                throw new Error('Cupo máximo inválido');
-            if (editingCurId) {
-                cursoSvc.update(editingCurId, { nombre, sigla, docente, cupoMaximo });
-                editingCurId = null;
-                q('#cur-cancel').style.display = 'none';
-                showMessage('Curso actualizado');
-            }
-            else {
-                cursoSvc.create({ nombre, sigla, docente, cupoMaximo, estado: 'disponible' });
-                showMessage('Curso creado');
-            }
-            cf.reset();
-            refreshAll();
-        }
-        catch (err) {
-            showMessage(err.message || String(err), true);
-        }
-    });
-    // Quick-create forms on dashboard
-    const dashEst = q('#dash-est-form');
-    const dashCur = q('#dash-cur-form');
-    if (dashEst) {
-        dashEst.addEventListener('submit', (e) => {
+        });
+    }
+    const btnDark = q('#btn-dark');
+    const btnExport = q('#btn-export');
+    const btnImport = q('#btn-import');
+    const inputImport = q('#input-import');
+    if (btnDark)
+        btnDark.addEventListener('click', toggleDarkMode);
+    if (btnExport)
+        btnExport.addEventListener('click', exportData);
+    if (btnImport && inputImport)
+        btnImport.addEventListener('click', () => inputImport.click());
+    if (inputImport) {
+        inputImport.addEventListener('change', () => {
+            const file = inputImport.files && inputImport.files[0];
+            if (file)
+                importData(file);
+            inputImport.value = '';
+        });
+    }
+    if (ef)
+        ef.addEventListener('submit', (e) => {
             e.preventDefault();
-            const fd = new FormData(dashEst);
+            const fd = new FormData(ef);
             const nombre = (fd.get('nombre') || '').trim();
             const correo = (fd.get('correo') || '').trim();
+            const edad = Number(fd.get('edad'));
+            const carrera = (fd.get('carrera') || '').trim();
             try {
-                if (!(0, validators_1.required)(nombre) || !(0, validators_1.required)(correo))
+                if (!required(nombre) || !required(correo) || !required(String(edad)) || !required(carrera))
                     throw new Error('Todos los campos son requeridos');
-                if (!(0, validators_1.isEmail)(correo))
+                if (!isEmail(correo))
                     throw new Error('Email inválido');
-                // defaults for quick create
-                estudianteSvc.create({ nombre, correo, edad: 18, carrera: 'General', estado: 'activo' });
-                showMessage('Estudiante creado');
-                dashEst.reset();
+                if (!isPositiveInteger(edad))
+                    throw new Error('Edad inválida');
+                if (editingEstId) {
+                    estudianteSvc.update(editingEstId, { nombre, correo, edad, carrera });
+                    editingEstId = null;
+                    q('#est-cancel').style.display = 'none';
+                    showMessage('Estudiante actualizado');
+                }
+                else {
+                    estudianteSvc.create({ nombre, correo, edad, carrera, estado: 'activo' });
+                    showMessage('Estudiante creado');
+                }
+                ef.reset();
                 refreshAll();
             }
             catch (err) {
                 showMessage(err.message || String(err), true);
             }
         });
-    }
-    if (dashCur) {
-        dashCur.addEventListener('submit', (e) => {
+    if (cf)
+        cf.addEventListener('submit', (e) => {
             e.preventDefault();
-            const fd = new FormData(dashCur);
+            const fd = new FormData(cf);
             const nombre = (fd.get('nombre') || '').trim();
             const sigla = (fd.get('sigla') || '').trim();
+            const docente = (fd.get('docente') || '').trim();
+            const cupoMaximo = Number(fd.get('cupoMaximo'));
             try {
-                if (!(0, validators_1.required)(nombre) || !(0, validators_1.required)(sigla))
+                if (!required(nombre) || !required(sigla) || !required(docente) || !required(String(cupoMaximo)))
                     throw new Error('Todos los campos son requeridos');
-                // defaults for quick create
-                cursoSvc.create({ nombre, sigla, docente: 'TBD', cupoMaximo: 30, estado: 'disponible' });
-                showMessage('Curso creado');
-                dashCur.reset();
+                if (!isPositiveInteger(cupoMaximo))
+                    throw new Error('Cupo máximo inválido');
+                if (editingCurId) {
+                    cursoSvc.update(editingCurId, { nombre, sigla, docente, cupoMaximo });
+                    editingCurId = null;
+                    q('#cur-cancel').style.display = 'none';
+                    showMessage('Curso actualizado');
+                }
+                else {
+                    cursoSvc.create({ nombre, sigla, docente, cupoMaximo, estado: 'disponible' });
+                    showMessage('Curso creado');
+                }
+                cf.reset();
                 refreshAll();
             }
             catch (err) {
                 showMessage(err.message || String(err), true);
             }
         });
-    }
-    q('#est-cancel').addEventListener('click', () => { editingEstId = null; q('#est-form').reset(); q('#est-cancel').style.display = 'none'; });
-    q('#cur-cancel').addEventListener('click', () => { editingCurId = null; q('#cur-form').reset(); q('#cur-cancel').style.display = 'none'; });
+    const estCancel = q('#est-cancel');
+    const curCancel = q('#cur-cancel');
+    if (estCancel)
+        estCancel.addEventListener('click', () => { var _a; editingEstId = null; (_a = q('#est-form')) === null || _a === void 0 ? void 0 : _a.reset(); estCancel.style.display = 'none'; });
+    if (curCancel)
+        curCancel.addEventListener('click', () => { var _a; editingCurId = null; (_a = q('#cur-form')) === null || _a === void 0 ? void 0 : _a.reset(); curCancel.style.display = 'none'; });
     const selEst = q('#insc-est');
     const selCur = q('#insc-curso');
-    insf.addEventListener('submit', (e) => {
-        e.preventDefault();
-        const estudianteId = Number(selEst.value);
-        const cursoId = Number(selCur.value);
-        try {
-            const estudiante = estudianteSvc.findById(estudianteId);
-            const curso = cursoSvc.findById(cursoId);
-            if (!estudiante)
-                throw new Error('Estudiante no encontrado');
-            if (!curso)
-                throw new Error('Curso no encontrado');
-            if (estudiante.estado === 'inactivo')
-                throw new Error('Estudiante inactivo');
-            if (curso.estado === 'cerrado')
-                throw new Error('Curso cerrado');
-            const inscritos = inscSvc.countByCurso(cursoId);
-            if ((0, validators_1.isPositiveInteger)(curso.cupoMaximo) && inscritos >= curso.cupoMaximo)
-                throw new Error('Cupo máximo alcanzado');
-            inscSvc.create({ estudianteId, cursoId });
-            showMessage('Inscripción exitosa');
-            refreshAll();
-        }
-        catch (err) {
-            showMessage(err.message || String(err), true);
-        }
-    });
+    if (insf && selEst && selCur)
+        insf.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const estudianteId = Number(selEst.value);
+            const cursoId = Number(selCur.value);
+            try {
+                const estudiante = estudianteSvc.findById(estudianteId);
+                const curso = cursoSvc.findById(cursoId);
+                if (!estudiante)
+                    throw new Error('Estudiante no encontrado');
+                if (!curso)
+                    throw new Error('Curso no encontrado');
+                if (estudiante.estado === 'inactivo')
+                    throw new Error('Estudiante inactivo');
+                if (curso.estado === 'cerrado')
+                    throw new Error('Curso cerrado');
+                const inscritos = inscSvc.countByCurso(cursoId);
+                if (isPositiveInteger(curso.cupoMaximo) && inscritos >= curso.cupoMaximo)
+                    throw new Error('Cupo máximo alcanzado');
+                inscSvc.create({ estudianteId, cursoId });
+                showMessage('Inscripción exitosa');
+                refreshAll();
+            }
+            catch (err) {
+                showMessage(err.message || String(err), true);
+            }
+        });
     // Search and filter
-    q('#search-est').addEventListener('input', refreshAll);
-    q('#filter-est').addEventListener('change', refreshAll);
-    q('#search-cur').addEventListener('input', refreshAll);
-    q('#filter-cur').addEventListener('change', refreshAll);
+    (_a = q('#search-est')) === null || _a === void 0 ? void 0 : _a.addEventListener('input', refreshAll);
+    (_b = q('#filter-est')) === null || _b === void 0 ? void 0 : _b.addEventListener('change', refreshAll);
+    (_c = q('#search-cur')) === null || _c === void 0 ? void 0 : _c.addEventListener('input', refreshAll);
+    (_d = q('#filter-cur')) === null || _d === void 0 ? void 0 : _d.addEventListener('change', refreshAll);
     // relations selects
-    q('#rel-est').addEventListener('change', (e) => { const id = Number(e.target.value); renderRelEst(id); });
-    q('#rel-cur').addEventListener('change', (e) => { const id = Number(e.target.value); renderRelCur(id); });
+    (_e = q('#rel-est')) === null || _e === void 0 ? void 0 : _e.addEventListener('change', (e) => { const id = Number(e.target.value); renderRelEst(id); });
+    (_f = q('#rel-cur')) === null || _f === void 0 ? void 0 : _f.addEventListener('change', (e) => { const id = Number(e.target.value); renderRelCur(id); });
 }
 function refreshAll() {
     renderLists();
@@ -358,22 +516,30 @@ function refreshAll() {
 }
 function fillInsSelects() {
     const selEst = q('#insc-est');
+    if (!selEst)
+        return;
     selEst.innerHTML = '';
     estudianteSvc.getAll().forEach(s => { const opt = document.createElement('option'); opt.value = String(s.id); opt.text = `${s.nombre} (${s.estado})`; selEst.appendChild(opt); });
     const selCur = q('#insc-curso');
+    if (!selCur)
+        return;
     selCur.innerHTML = '';
     cursoSvc.getAll().forEach(c => { const opt = document.createElement('option'); opt.value = String(c.id); opt.text = `${c.nombre} [${c.sigla}] (${c.estado})`; selCur.appendChild(opt); });
 }
 function fillRelationsSelects() {
     const relE = q('#rel-est');
+    const relC = q('#rel-cur');
+    if (!relE || !relC)
+        return;
     relE.innerHTML = '<option value="">--seleccione--</option>';
     estudianteSvc.getAll().forEach(s => { const o = document.createElement('option'); o.value = String(s.id); o.text = s.nombre; relE.appendChild(o); });
-    const relC = q('#rel-cur');
     relC.innerHTML = '<option value="">--seleccione--</option>';
     cursoSvc.getAll().forEach(c => { const o = document.createElement('option'); o.value = String(c.id); o.text = c.nombre; relC.appendChild(o); });
 }
 function renderRelEst(id) {
     const ul = q('#rel-est-list');
+    if (!ul)
+        return;
     ul.innerHTML = '';
     if (!id)
         return;
@@ -382,6 +548,8 @@ function renderRelEst(id) {
 }
 function renderRelCur(id) {
     const ul = q('#rel-cur-list');
+    if (!ul)
+        return;
     ul.innerHTML = '';
     if (!id)
         return;
@@ -389,132 +557,177 @@ function renderRelCur(id) {
     ins.forEach(i => { const s = estudianteSvc.findById(i.estudianteId); const li = document.createElement('li'); li.textContent = s ? `${s.nombre} (${s.correo})` : `Est ${i.estudianteId}`; ul.appendChild(li); });
 }
 function renderStats() {
-    // Mostrar únicamente: cantidad de alumnos inscritos (únicos) y conteo por curso
+    // Dashboard con tarjetas resumen y conteo por curso
     const cards = q('#dashboard-cards');
     if (!cards)
         return;
+    const summary = q('#dashboard-summary');
     cards.innerHTML = '';
+    if (summary)
+        summary.innerHTML = '';
+    const totalEst = estudianteSvc.getAll().length;
+    const totalCur = cursoSvc.getAll().length;
     const inscripciones = inscSvc.getAll().filter(i => i.estado === 'activa');
     const uniqueEst = new Set(inscripciones.map(i => i.estudianteId));
     const totalInscritos = uniqueEst.size;
     const build = (title, value) => { const c = document.createElement('div'); c.className = 'card'; c.innerHTML = `<h3>${title}</h3><p>${value}</p>`; return c; };
-    // Card con total de alumnos inscritos
+    cards.appendChild(build('Total estudiantes', String(totalEst)));
+    cards.appendChild(build('Total cursos', String(totalCur)));
     cards.appendChild(build('Alumnos inscritos', String(totalInscritos)));
-    // Cards por curso con su cantidad de inscritos activos
     const cursos = cursoSvc.getAll();
     cursos.forEach(c => {
         const cnt = inscripciones.filter(i => i.cursoId === c.id).length;
         cards.appendChild(build(`${c.nombre} (${c.sigla})`, String(cnt)));
     });
+    if (summary) {
+        summary.textContent = `Inscripciones activas: ${inscripciones.length}. Estudiantes con al menos una inscripción: ${totalInscritos}.`;
+    }
 }
 function renderLists() {
+    var _a, _b, _c, _d;
     const estContainer = q('#est-list');
-    estContainer.innerHTML = '';
     const curContainer = q('#cur-list');
-    curContainer.innerHTML = '';
     const insContainer = q('#insc-list');
-    insContainer.innerHTML = '';
-    const searchEst = (q('#search-est').value || '').toLowerCase();
-    const filterEst = (q('#filter-est').value || 'all');
-    const searchCur = (q('#search-cur').value || '').toLowerCase();
-    const filterCur = (q('#filter-cur').value || 'all');
+    if (estContainer)
+        estContainer.innerHTML = '';
+    if (curContainer)
+        curContainer.innerHTML = '';
+    if (insContainer)
+        insContainer.innerHTML = '';
+    const searchEst = (((_a = q('#search-est')) === null || _a === void 0 ? void 0 : _a.value) || '').toLowerCase();
+    const filterEst = (((_b = q('#filter-est')) === null || _b === void 0 ? void 0 : _b.value) || 'all');
+    const searchCur = (((_c = q('#search-cur')) === null || _c === void 0 ? void 0 : _c.value) || '').toLowerCase();
+    const filterCur = (((_d = q('#filter-cur')) === null || _d === void 0 ? void 0 : _d.value) || 'all');
     // Estudiantes
-    const estSection = document.createElement('section');
-    estSection.innerHTML = '<h2>Estudiantes</h2>';
-    const tableE = document.createElement('table');
-    tableE.innerHTML = '<tr><th>Nombre</th><th>Correo</th><th>Edad</th><th>Carrera</th><th>Estado</th><th>Acciones</th></tr>';
-    estudianteSvc.getAll().filter(s => (s.nombre.toLowerCase().includes(searchEst)) && (filterEst === 'all' || s.estado === filterEst)).forEach(s => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${s.nombre}</td><td>${s.correo}</td><td>${s.edad}</td><td>${s.carrera}</td><td>${s.estado}</td>`;
-        const td = document.createElement('td');
-        const btnEdit = document.createElement('button');
-        btnEdit.textContent = 'Editar';
-        btnEdit.addEventListener('click', () => { startEditEst(s.id); });
-        const btnDel = document.createElement('button');
-        btnDel.textContent = 'Eliminar';
-        btnDel.addEventListener('click', () => { if (confirm('Eliminar estudiante?')) {
-            estudianteSvc.delete(s.id);
-            inscSvc.getAll().filter(i => i.estudianteId === s.id).forEach(i => inscSvc.delete(i.id));
-            refreshAll();
-            showMessage('Estudiante eliminado');
-        } });
-        const btnToggle = document.createElement('button');
-        btnToggle.textContent = 'Toggle estado';
-        btnToggle.addEventListener('click', () => { estudianteSvc.toggleEstado(s.id); refreshAll(); });
-        td.appendChild(btnEdit);
-        td.appendChild(btnToggle);
-        td.appendChild(btnDel);
-        tr.appendChild(td);
-        tableE.appendChild(tr);
-    });
-    estSection.appendChild(tableE);
-    estContainer.appendChild(estSection);
+    if (estContainer) {
+        const estSection = document.createElement('section');
+        estSection.innerHTML = '<h2>Estudiantes</h2>';
+        const tableE = document.createElement('table');
+        tableE.innerHTML = '<tr><th data-sort-est="nombre">Nombre</th><th data-sort-est="correo">Correo</th><th data-sort-est="edad">Edad</th><th data-sort-est="carrera">Carrera</th><th data-sort-est="estado">Estado</th><th>Acciones</th></tr>';
+        const estRows = estudianteSvc.getAll().filter(s => (s.nombre.toLowerCase().includes(searchEst)) && (filterEst === 'all' || s.estado === filterEst));
+        estRows.sort((a, b) => compareValues(a[estSort.key], b[estSort.key], estSort.dir));
+        estRows.forEach(s => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${s.nombre}</td><td>${s.correo}</td><td>${s.edad}</td><td>${s.carrera}</td><td>${s.estado}</td>`;
+            const td = document.createElement('td');
+            const btnEdit = document.createElement('button');
+            btnEdit.textContent = 'Editar';
+            btnEdit.addEventListener('click', () => { showEditEstudianteModal(s.id); });
+            const btnDel = document.createElement('button');
+            btnDel.textContent = 'Eliminar';
+            btnDel.addEventListener('click', () => { showConfirmModal('Eliminar estudiante?', () => { estudianteSvc.delete(s.id); inscSvc.getAll().filter(i => i.estudianteId === s.id).forEach(i => inscSvc.delete(i.id)); refreshAll(); showMessage('Estudiante eliminado'); }); });
+            const btnToggle = document.createElement('button');
+            btnToggle.textContent = 'Toggle estado';
+            btnToggle.addEventListener('click', () => { estudianteSvc.toggleEstado(s.id); refreshAll(); });
+            td.appendChild(btnEdit);
+            td.appendChild(btnToggle);
+            td.appendChild(btnDel);
+            tr.appendChild(td);
+            tableE.appendChild(tr);
+        });
+        tableE.querySelectorAll('th[data-sort-est]').forEach(th => {
+            th.addEventListener('click', () => {
+                const key = th.getAttribute('data-sort-est');
+                estSort = estSort.key === key ? { key, dir: (estSort.dir * -1) } : { key, dir: 1 };
+                refreshAll();
+            });
+            th.style.cursor = 'pointer';
+        });
+        estSection.appendChild(tableE);
+        estContainer.appendChild(estSection);
+    }
     // Cursos
-    const curSection = document.createElement('section');
-    curSection.innerHTML = '<h2>Cursos</h2>';
-    const tableC = document.createElement('table');
-    tableC.innerHTML = '<tr><th>Nombre</th><th>Sigla</th><th>Docente</th><th>Cupo</th><th>Estado</th><th>Acciones</th></tr>';
-    cursoSvc.getAll().filter(c => (c.nombre.toLowerCase().includes(searchCur) || c.sigla.toLowerCase().includes(searchCur)) && (filterCur === 'all' || c.estado === filterCur)).forEach(c => {
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${c.nombre}</td><td>${c.sigla}</td><td>${c.docente}</td><td>${c.cupoMaximo}</td><td>${c.estado}</td>`;
-        const td = document.createElement('td');
-        const btnEdit = document.createElement('button');
-        btnEdit.textContent = 'Editar';
-        btnEdit.addEventListener('click', () => { startEditCur(c.id); });
-        const btnDel = document.createElement('button');
-        btnDel.textContent = 'Eliminar';
-        btnDel.addEventListener('click', () => { if (confirm('Eliminar curso?')) {
-            cursoSvc.delete(c.id);
-            inscSvc.getAll().filter(i => i.cursoId === c.id).forEach(i => inscSvc.delete(i.id));
-            refreshAll();
-            showMessage('Curso eliminado');
-        } });
-        const btnToggle = document.createElement('button');
-        btnToggle.textContent = 'Toggle estado';
-        btnToggle.addEventListener('click', () => { cursoSvc.toggleEstado(c.id); refreshAll(); });
-        td.appendChild(btnEdit);
-        td.appendChild(btnToggle);
-        td.appendChild(btnDel);
-        tr.appendChild(td);
-        tableC.appendChild(tr);
-    });
-    curSection.appendChild(tableC);
-    curContainer.appendChild(curSection);
+    if (curContainer) {
+        const curSection = document.createElement('section');
+        curSection.innerHTML = '<h2>Cursos</h2>';
+        const tableC = document.createElement('table');
+        tableC.innerHTML = '<tr><th data-sort-cur="nombre">Nombre</th><th data-sort-cur="sigla">Sigla</th><th data-sort-cur="docente">Docente</th><th data-sort-cur="cupoMaximo">Cupo</th><th data-sort-cur="estado">Estado</th><th>Acciones</th></tr>';
+        const curRows = cursoSvc.getAll().filter(c => (c.nombre.toLowerCase().includes(searchCur) || c.sigla.toLowerCase().includes(searchCur)) && (filterCur === 'all' || c.estado === filterCur));
+        curRows.sort((a, b) => compareValues(a[curSort.key], b[curSort.key], curSort.dir));
+        curRows.forEach(c => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${c.nombre}</td><td>${c.sigla}</td><td>${c.docente}</td><td>${c.cupoMaximo}</td><td>${c.estado}</td>`;
+            const td = document.createElement('td');
+            const btnEdit = document.createElement('button');
+            btnEdit.textContent = 'Editar';
+            btnEdit.addEventListener('click', () => { showEditCursoModal(c.id); });
+            const btnDel = document.createElement('button');
+            btnDel.textContent = 'Eliminar';
+            btnDel.addEventListener('click', () => { showConfirmModal('Eliminar curso?', () => { cursoSvc.delete(c.id); inscSvc.getAll().filter(i => i.cursoId === c.id).forEach(i => inscSvc.delete(i.id)); refreshAll(); showMessage('Curso eliminado'); }); });
+            const btnToggle = document.createElement('button');
+            btnToggle.textContent = 'Toggle estado';
+            btnToggle.addEventListener('click', () => { cursoSvc.toggleEstado(c.id); refreshAll(); });
+            td.appendChild(btnEdit);
+            td.appendChild(btnToggle);
+            td.appendChild(btnDel);
+            tr.appendChild(td);
+            tableC.appendChild(tr);
+        });
+        tableC.querySelectorAll('th[data-sort-cur]').forEach(th => {
+            th.addEventListener('click', () => {
+                const key = th.getAttribute('data-sort-cur');
+                curSort = curSort.key === key ? { key, dir: (curSort.dir * -1) } : { key, dir: 1 };
+                refreshAll();
+            });
+            th.style.cursor = 'pointer';
+        });
+        curSection.appendChild(tableC);
+        curContainer.appendChild(curSection);
+    }
     // Inscripciones
-    const insSection = document.createElement('section');
-    insSection.innerHTML = '<h2>Inscripciones</h2>';
-    const tableI = document.createElement('table');
-    tableI.innerHTML = '<tr><th>Estudiante</th><th>Curso</th><th>Fecha</th><th>Estado</th><th>Acciones</th></tr>';
-    inscSvc.getAll().forEach(i => {
-        const est = estudianteSvc.findById(i.estudianteId);
-        const cur = cursoSvc.findById(i.cursoId);
-        const tr = document.createElement('tr');
-        tr.innerHTML = `<td>${est ? est.nombre : i.estudianteId}</td><td>${cur ? cur.nombre : i.cursoId}</td><td>${i.fecha}</td><td>${i.estado}</td>`;
-        const td = document.createElement('td');
-        const btnDel = document.createElement('button');
-        btnDel.textContent = 'Eliminar';
-        btnDel.addEventListener('click', () => { if (confirm('Eliminar inscripcion?')) {
-            inscSvc.delete(i.id);
-            refreshAll();
-            showMessage('Inscripción eliminada');
-        } });
-        const btnCancel = document.createElement('button');
-        btnCancel.textContent = 'Cancelar';
-        btnCancel.addEventListener('click', () => { try {
-            inscSvc.cancel(i.id);
-            refreshAll();
-            showMessage('Inscripción cancelada');
-        }
-        catch (err) {
-            showMessage(err.message, true);
-        } });
-        td.appendChild(btnCancel);
-        td.appendChild(btnDel);
-        tr.appendChild(td);
-        tableI.appendChild(tr);
-    });
-    insSection.appendChild(tableI);
-    insContainer.appendChild(insSection);
+    if (insContainer) {
+        const insSection = document.createElement('section');
+        insSection.innerHTML = '<h2>Inscripciones</h2>';
+        const tableI = document.createElement('table');
+        tableI.innerHTML = '<tr><th data-sort-ins="estudiante">Estudiante</th><th data-sort-ins="curso">Curso</th><th data-sort-ins="fecha">Fecha</th><th data-sort-ins="estado">Estado</th><th>Acciones</th></tr>';
+        const insRows = inscSvc.getAll().map(i => {
+            const est = estudianteSvc.findById(i.estudianteId);
+            const cur = cursoSvc.findById(i.cursoId);
+            return { raw: i, estudiante: est ? est.nombre : String(i.estudianteId), curso: cur ? cur.nombre : String(i.cursoId) };
+        });
+        insRows.sort((a, b) => {
+            if (insSort.key === 'estudiante')
+                return compareValues(a.estudiante, b.estudiante, insSort.dir);
+            if (insSort.key === 'curso')
+                return compareValues(a.curso, b.curso, insSort.dir);
+            if (insSort.key === 'estado')
+                return compareValues(a.raw.estado, b.raw.estado, insSort.dir);
+            return compareValues(a.raw.fecha, b.raw.fecha, insSort.dir);
+        });
+        insRows.forEach(({ raw, estudiante, curso }) => {
+            const i = raw;
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td>${estudiante}</td><td>${curso}</td><td>${i.fecha}</td><td>${i.estado}</td>`;
+            const td = document.createElement('td');
+            const btnDel = document.createElement('button');
+            btnDel.textContent = 'Eliminar';
+            btnDel.addEventListener('click', () => { showConfirmModal('Eliminar inscripcion?', () => { inscSvc.delete(i.id); refreshAll(); showMessage('Inscripción eliminada'); }); });
+            const btnCancel = document.createElement('button');
+            btnCancel.textContent = 'Cancelar';
+            btnCancel.addEventListener('click', () => { try {
+                inscSvc.cancel(i.id);
+                refreshAll();
+                showMessage('Inscripción cancelada');
+            }
+            catch (err) {
+                showMessage(err.message, true);
+            } });
+            td.appendChild(btnCancel);
+            td.appendChild(btnDel);
+            tr.appendChild(td);
+            tableI.appendChild(tr);
+        });
+        tableI.querySelectorAll('th[data-sort-ins]').forEach(th => {
+            th.addEventListener('click', () => {
+                const key = th.getAttribute('data-sort-ins');
+                insSort = insSort.key === key ? { key, dir: (insSort.dir * -1) } : { key, dir: 1 };
+                refreshAll();
+            });
+            th.style.cursor = 'pointer';
+        });
+        insSection.appendChild(tableI);
+        insContainer.appendChild(insSection);
+    }
 }
 function startEditEst(id) {
     const est = estudianteSvc.findById(id);

@@ -1,4 +1,4 @@
-import { Storage } from "../utils/storage";
+import { Storage } from "../utils/storage.js";
 
 export class BaseService<T extends { id: number }> {
   protected key: string;

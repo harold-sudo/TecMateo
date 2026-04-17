@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.renderCursos = renderCursos;
-function renderCursos(container, cursos) {
+export function renderCursos(container, cursos) {
     const section = document.createElement('section');
     section.innerHTML = '<h2>Cursos</h2>';
     const ul = document.createElement('ul');

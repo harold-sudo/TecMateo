@@ -1,4 +1,4 @@
-import { EstadoEstudiante } from "./types";
+import { EstadoEstudiante } from "./types.js";
 
 export interface Estudiante {
   id: number;

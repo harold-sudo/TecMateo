@@ -1,9 +1,6 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.EstudianteService = void 0;
-const base_service_1 = require("./base.service");
+import { BaseService } from "./base.service.js";
 const KEY = 'estudiantes';
-class EstudianteService extends base_service_1.BaseService {
+export class EstudianteService extends BaseService {
     constructor() { super(KEY); }
     findByEmail(email) {
         return this.getAll().find(s => s.correo === email);
@@ -30,4 +27,3 @@ class EstudianteService extends base_service_1.BaseService {
         return this.update(id, { estado: nuevoEstado });
     }
 }
-exports.EstudianteService = EstudianteService;

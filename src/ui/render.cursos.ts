@@ -1,4 +1,4 @@
-import { Curso } from "../models/curso";
+import { Curso } from "../models/curso.js";
 
 export function renderCursos(container: HTMLElement, cursos: Curso[]){
   const section = document.createElement('section');

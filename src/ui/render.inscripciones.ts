@@ -1,4 +1,4 @@
-import { Inscripcion } from "../models/inscripcion";
+import { Inscripcion } from "../models/inscripcion.js";
 
 export function renderInscripciones(container: HTMLElement, inscripciones: Inscripcion[]){
   const section = document.createElement('section');

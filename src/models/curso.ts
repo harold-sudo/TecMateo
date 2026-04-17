@@ -1,4 +1,4 @@
-import { EstadoCurso } from "./types";
+import { EstadoCurso } from "./types.js";
 
 export interface Curso {
   id: number;

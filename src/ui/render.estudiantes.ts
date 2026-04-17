@@ -1,4 +1,4 @@
-import { Estudiante } from "../models/estudiante";
+import { Estudiante } from "../models/estudiante.js";
 
 export function renderEstudiantes(container: HTMLElement, estudiantes: Estudiante[]){
   const section = document.createElement('section');

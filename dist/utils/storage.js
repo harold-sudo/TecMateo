@@ -1,7 +1,4 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Storage = void 0;
-exports.Storage = {
+export const Storage = {
     get(key) {
         const raw = localStorage.getItem(key);
         return raw ? JSON.parse(raw) : [];
@@ -17,8 +14,8 @@ exports.Storage = {
         return next;
     },
     add(key, item) {
-        const list = exports.Storage.get(key);
+        const list = Storage.get(key);
         list.push(item);
-        exports.Storage.set(key, list);
+        Storage.set(key, list);
     }
 };

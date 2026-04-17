@@ -1,4 +1,4 @@
-import { EstadoInscripcion } from "./types";
+import { EstadoInscripcion } from "./types.js";
 
 export interface Inscripcion {
   id: number;

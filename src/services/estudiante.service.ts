@@ -1,5 +1,5 @@
-import { Estudiante } from "../models/estudiante";
-import { BaseService } from "./base.service";
+import { Estudiante } from "../models/estudiante.js";
+import { BaseService } from "./base.service.js";
 
 const KEY = 'estudiantes';
 
